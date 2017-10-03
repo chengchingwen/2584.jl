@@ -7,7 +7,7 @@ mutable struct Record <: AbstractArray{Action, 1}
     actions::Array{Action,1}
     time0::Int
     time1::Int
-    Record() = new([], 0, 0)
+    Record() = new(Action[], 0, 0)
     Record(arg::Action...) = new([arg...], 0,0)
 end
 
@@ -18,7 +18,7 @@ Base.setindex!(r::Record, a::Action, i::Int) = (r.actions[i] = a)
 Base.push!(r::Record, x) = Base.push!(r.actions, x)
 
 function milli()
-    return round(Int, time() * 1000)
+    return round(Int, time_ns() / 1e6)
 end
 
 function tick(r::Record)
@@ -158,9 +158,10 @@ end
 function Base.read(stream::IO, s::Statistic)
     si = read(stream, Int)
     s.total = s.block = si
-    resize!(s.data, si)
-    for i ∈ 1:s
-        s.data[i] = read(stream, Record)
+    resize!(s.data::Array{Record}, si)
+    for i ∈ 1:si
+        s.data[i] = Record()
+        read(stream, s.data[i])
     end
     return stream
 end

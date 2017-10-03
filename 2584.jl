@@ -30,6 +30,29 @@ function parse_commandline()
     return parse_args(s)
 end
 
+function run(stat::Statistic, play::Player, evil::RndEnv)
+    open_episode(evil, "~:" * name(evil))
+    open_episode(play, name(play) * ":~" )
+    open_episode(stat, "$(name(play)):$(name(evil))")
+    game = make_empty_board(stat)
+    while true
+        who = take_turns(stat, play, evil)
+        move = take_action(who, game)
+        if apply(move, game) == -1
+            break
+        end
+        save_action(stat, move)
+        if check_for_win(who, game)
+            break
+        end
+    end
+    win = last_turns(stat, play, evil)
+    close_episode(stat, name(win))
+    close_episode(play, name(win))
+    close_episode(evil, name(win))
+end
+
+
 function main()
     println("2584 Demo: $(@__FILE__) $(join(ARGS, ' '))")
     parsed_args = parse_commandline()
@@ -47,33 +70,18 @@ function main()
     stat = Statistic(total, block)
     if load != nothing
         #load something
+        open(load, "r") do f
+            if !isopen(f)
+                return -1
+            end
+            read(f, stat)
+            close(f)
+        end
     end
     play = Player(play_args)
     evil = RndEnv(evil_args)
     while !is_finished(stat)
-        open_episode(evil, "~:" * name(evil))
-        open_episode(play, name(play) * ":~" )
-
-        open_episode(stat, "$(name(play)):$(name(evil))")
-        game = make_empty_board(stat)
-        while true
-            # println(game)
-            who = take_turns(stat, play, evil)
-            move = take_action(who, game)
-            if apply(move, game) == -1
-                break
-            end
-#            println(game)
-            save_action(stat, move)
-            if check_for_win(who, game)
-                break
-            end
-        end
-        win = last_turns(stat, play, evil)
-        close_episode(stat, name(win))
-        close_episode(play, name(win))
-        close_episode(evil, name(win))
-#        println(game)
+        run(stat, play, evil)
     end
     if summary
         Summary(stat)

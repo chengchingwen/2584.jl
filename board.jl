@@ -146,11 +146,11 @@ function rotate(b::Board ; r=1)
 end
 
 function show(io::IO, a::Board)
-    println("+------------------------+")
+    println(io,"+------------------------+")
     for i ∈ 1:4
-        @printf "|%6d%6d%6d%6d|\n" map((x)-> x == 0 ? 0 : Fib[x] ,a.tile[i,1:4])...
+        @printf io "|%6d%6d%6d%6d|\n" map((x)-> x == 0 ? 0 : Fib[x] ,a.tile[i,1:4])...
     end
-    println("+------------------------+")
+    println(io,"+------------------------+")
 end
 
 #end
