@@ -18,7 +18,7 @@ Base.size(F::Fibonacci) = (F.count,)
 Base.getindex(F::Fibonacci, i::Int) = F.Fibo[i]
 Base.getindex(F::Fibonacci, i::Number) = F[convert(Int, i)]
 
-Fib = Fibonacci(17)
+Fib = Fibonacci(25)
 
 mutable struct Board
     tile::Array{Int,2}

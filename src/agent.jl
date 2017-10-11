@@ -83,13 +83,17 @@ end
 function take_action(A::Player, b::Board)
     opcode = 0:3
     shuffle!(A.rng, collect(opcode))
+    MaxOP = MaxVal = -1
     for op ∈ opcode
         before = Board(b)
-        if move(before, op) != -1
-            return move(op)
+        try_move = move(before, op)
+        # println(op)
+        if  try_move > MaxVal
+            MaxVal = try_move
+            MaxOP = op
         end
     end
-    return Action()
+    return MaxOP != -1 ? Action(MaxOP) : Action()
 end
 
 
