@@ -1,6 +1,4 @@
-# include("./board.jl")
-# include("./action.jl")
-# include("./agent.jl")
+include("./agent.jl")
 
 
 mutable struct Record <: AbstractArray{Action, 1}
@@ -15,7 +13,7 @@ Base.size(r::Record) = Base.size(r.actions)
 Base.getindex(r::Record, i::Int) = r.actions[i]
 Base.getindex(r::Record, i::Number) = r[convert(Int, i)]
 Base.setindex!(r::Record, a::Action, i::Int) = (r.actions[i] = a)
-Base.push!(r::Record, x) = Base.push!(r.actions, x)
+Base.push!(r::Record, x::Action)::Array{Action,1} = Base.push!(r.actions, x)
 
 function milli()
     return round(Int, time_ns() / 1e6)
@@ -58,7 +56,7 @@ end
 mutable struct Statistic
     total::Int
     block::Int
-    data::Array{Record}
+    data::Array{Record, 1}
     Statistic(t::Int, b::Int = 0) = new(t, b≠0?b:t , [])
 end
 
@@ -72,12 +70,11 @@ function show(s::Statistic)
         game = Board()
         score = 0
         for act ∈ path
-            # println(game)
             score += apply(act, game)
         end
         Sum += score
         Max = max(score, Max)
-        Opc += (size(path,1) -2) >> 2
+        Opc += (size(path,1) -2) >> 1
         tile = 0
         for j ∈ 0:15
             tile = max(tile, game(j))
@@ -91,6 +88,8 @@ function show(s::Statistic)
     avg = Sum / b
     coef = 100.0 / b
     Ops = Opc * 1000.0 / Duration
+    # println("Opc = $(Opc)")
+    # println("Dur = $(Duration)")
     println("$(size(s.data,1))\tavg = $(round(Int,avg)), max = $(round(Int,Max)), ops = $(round(Int,Ops))")
     t = 1
     c = 0
@@ -132,7 +131,7 @@ end
 
 
 make_empty_board(s::Statistic) = Board()
-save_action(s::Statistic, a::Action) = push!(s.data[end], a)
+save_action(s::Statistic, a::Action) = push!(s.data[end]::Record, a)::Array{Action,1}
 
 
 function take_turns(s::Statistic,play::AbstractAgent, evil::AbstractAgent)

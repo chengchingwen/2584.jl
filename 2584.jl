@@ -1,7 +1,4 @@
 using ArgParse
-include("./board.jl")
-include("./action.jl")
-include("./agent.jl")
 include("./statistic.jl")
 
 function parse_commandline()
@@ -30,11 +27,8 @@ function parse_commandline()
     return parse_args(s)
 end
 
-function run(stat::Statistic, play::Player, evil::RndEnv)
-    open_episode(evil, "~:" * name(evil))
-    open_episode(play, name(play) * ":~" )
-    open_episode(stat, "$(name(play)):$(name(evil))")
-    game = make_empty_board(stat)
+
+function Run(stat::Statistic, game::Board ,play::Player, evil::RndEnv)
     while true
         who = take_turns(stat, play, evil)
         move = take_action(who, game)
@@ -47,16 +41,27 @@ function run(stat::Statistic, play::Player, evil::RndEnv)
         end
     end
     win = last_turns(stat, play, evil)
+    return win
+end
+
+
+function run_game(stat::Statistic, play::Player, evil::RndEnv)
+    open_episode(evil, "~:" * name(evil))
+    open_episode(play, name(play) * ":~" )
+    open_episode(stat, "$(name(play)):$(name(evil))")
+    game = make_empty_board(stat)
+    win = Run(stat, game, play, evil)
     close_episode(stat, name(win))
     close_episode(play, name(win))
     close_episode(evil, name(win))
+    return
 end
 
 
 function main()
-    println("2584 Demo: $(@__FILE__) $(join(ARGS, ' '))")
+    println("2584 Demo: $(@__FILE__) $(join(ARGS, ' '))\n")
     parsed_args = parse_commandline()
-    println("Parsed args:")
+    # println("Parsed args:")
     total = parsed_args["total"]
     block = parsed_args["block"]
     play_args = parsed_args["play"]
@@ -64,9 +69,9 @@ function main()
     load = parsed_args["load"]
     save = parsed_args["save"]
     summary = parsed_args["summary"]
-    for (arg,val) in parsed_args
-        println("  $arg  =>  $val")
-    end
+    # for (arg,val) in parsed_args
+    #     println("  $arg  =>  $val")
+    # end
     stat = Statistic(total, block)
     if load != nothing
         #load something
@@ -80,9 +85,11 @@ function main()
     end
     play = Player(play_args)
     evil = RndEnv(evil_args)
+
     while !is_finished(stat)
-        run(stat, play, evil)
+        run_game(stat, play, evil)
     end
+
     if summary
         Summary(stat)
     end
@@ -96,8 +103,7 @@ function main()
             close(f)
         end
     end
+    return 0;
 end
-
-
 
 main()

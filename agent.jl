@@ -1,6 +1,5 @@
 # #module AGENT
-# include("./board.jl")
-# include("./action.jl")
+include("./action.jl")
 
 abstract type AbstractAgent end
 
@@ -22,7 +21,7 @@ end
 
 open_episode(A::AbstractAgent, flag::String) = ()
 close_episode(A::AbstractAgent, flag::String) = ()
-check_for_win(A::AbstractAgent, b::Board) = false
+check_for_win(A::AbstractAgent, b::Board)::Bool = false
 
 #function take_action(A::Agent, b::Board)
 

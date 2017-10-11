@@ -1,5 +1,5 @@
 #module ACTION
-# include("./board.jl")
+include("./board.jl")
 
 
 struct Action
@@ -10,11 +10,11 @@ struct Action
 end
 
 
-function (a::Action)()
+function (a::Action)()::Int
     return a.opcode
 end
 
-function apply(a::Action, b::Board)
+function apply(a::Action, b::Board)::Int
     if mod(a.opcode,4) == a.opcode
         return move(b,a.opcode)
     elseif b(mod(a.opcode, 16)) == 0
@@ -28,8 +28,15 @@ end
 
 function name(a::Action)
     if mod(a.opcode,4) == a.opcode
-        opname = [ "up", "right", "down", "left" ]
-        return "slide " + opname[a.opcode]
+        if op == 0
+            return "slide up"
+        elseif op == 1
+            return "slide right"
+        elseif op == 2
+            return "slide down"
+        else
+            return "slide left"
+        end
     else
         return "place $(opcode >> 4))-index at position $(opcode & 0x0f))"
     end
