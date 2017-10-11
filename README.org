@@ -1,0 +1,20 @@
+* 2584.jl
+a 2584 game framework implement in Julia.
+
+#+BEGIN_EXAMPLE
+$ julia ./2584.jl -h
+usage: 2584.jl [--total TOTAL] [--block BLOCK] [--play PLAY]
+               [--evil EVIL] [--load LOAD] [--save SAVE] [--summary]
+               [-h]
+
+optional arguments:
+  --total TOTAL  how many games to play. (type: Int64, default: 1000)
+  --block BLOCK  (type: Int64, default: 0)
+  --play PLAY    The arguments of player initialization.
+  --evil EVIL    The arguments of evil (environment) initialization.
+  --load LOAD    Path to load statistic data.
+  --save SAVE    Path to save statistic data.
+  --summary
+  -h, --help     show this help message and exit
+
+#+END_EXAMPLE
