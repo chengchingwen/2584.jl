@@ -1,7 +1,7 @@
 using ArgParse
 include("./statistic.jl")
 
-function parse_commandline()
+function parse_commandline(ARGS)
     s = ArgParseSettings()
     @add_arg_table s begin
         "--total"
@@ -24,7 +24,7 @@ function parse_commandline()
         "--summary"
           action = :store_true
     end
-    return parse_args(s)
+    return parse_args(ARGS, s)
 end
 
 
@@ -58,9 +58,10 @@ function run_game(stat::Statistic, play::Player, evil::RndEnv)
 end
 
 
-function main()
-    println("2584 Demo: $(@__FILE__) $(join(ARGS, ' '))\n")
-    parsed_args = parse_commandline()
+Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+    println("2584 Demo: $(basename(@__FILE__)) $(join(ARGS, ' '))\n")
+    parsed_args = parse_commandline(ARGS)
+    #println(ARGS)
     # println("Parsed args:")
     total = parsed_args["total"]
     block = parsed_args["block"]
@@ -106,4 +107,4 @@ function main()
     return 0;
 end
 
-main()
+# main()

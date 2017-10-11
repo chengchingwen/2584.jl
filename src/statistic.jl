@@ -60,7 +60,7 @@ mutable struct Statistic
     Statistic(t::Int, b::Int = 0) = new(t, b≠0?b:t , [])
 end
 
-function show(s::Statistic)
+function Base.show(s::Statistic)
     b = min(size(s.data,1), s.block)
     Duration = Sum = Max = Opc = 0
     stat = zeros(Int,25)
