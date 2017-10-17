@@ -1,9 +1,9 @@
-using ArgParse
+include("/home/peter/.julia/v0.6/ArgParse/src/ArgParse.jl")
 include("./statistic.jl")
 
 function parse_commandline(ARGS)
-    s = ArgParseSettings()
-    @add_arg_table s begin
+    s = ArgParse.ArgParseSettings()
+    ArgParse.@add_arg_table s begin
         "--total"
           help = "how many games to play."
           arg_type = Int
@@ -24,7 +24,7 @@ function parse_commandline(ARGS)
         "--summary"
           action = :store_true
     end
-    return parse_args(ARGS, s)
+    return ArgParse.parse_args(ARGS, s)
 end
 
 
@@ -57,8 +57,8 @@ function run_game(stat::Statistic, play::Player, evil::RndEnv)
     return
 end
 
-
-Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
+function main()
+# Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     println("2584 Demo: $(basename(@__FILE__)) $(join(ARGS, ' '))\n")
     parsed_args = parse_commandline(ARGS)
     #println(ARGS)
@@ -107,4 +107,4 @@ Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     return 0;
 end
 
-# main()
+main()
