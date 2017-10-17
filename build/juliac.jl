@@ -63,7 +63,13 @@ function julia_compile(julia_program_file, build_dir, C_FILE)
     ldflags = Base.shell_split(readstring(`$command --ldflags`))
     ldlibs = Base.shell_split(readstring(`$command --ldlibs`))
 
+    println(command)
+    println(cflags)
+    println(ldflags)
+    println(ldlibs)
+
     command = `gcc -m64 -shared -o $SO_FILE $O_FILE $cflags $ldflags $ldlibs -Wl,-rpath,\$ORIGIN`
+    #command = `gcc -m64 -static -o $SO_FILE $O_FILE $cflags $ldflags $ldlibs -Wl,-rpath,\$ORIGIN`
     if is_windows()
         command = `$command -Wl,--export-all-symbols`
     end
@@ -77,15 +83,10 @@ end
 
 function main()
     parsed_args = parse_commandline(ARGS)
-    println(ARGS)
-    println("Parsed args:")
     JULIA_PROGRAM_FILE = parsed_args["julia_file"]
     BUILDDIR = parsed_args["builddir"]
     C_FILE = parsed_args["cfile"]
-    # for (arg,val) in parsed_args
-    #     println("  $arg  =>  $val")
-    # end
-    
+
     println("Program file:\n$(abspath(JULIA_PROGRAM_FILE))")
     julia_compile(JULIA_PROGRAM_FILE, BUILDDIR, C_FILE)
 end
