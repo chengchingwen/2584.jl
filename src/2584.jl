@@ -110,9 +110,10 @@ function main()
     while !is_finished(stat)
         run_game(stat, play, evil)
     end
+    if get(play.property, "save", -1) != -1
+        save_weights(play, play.property["save"])
+    end
 
-    save_weights(play, play.property["save"])
-    
     if summary
         Summary(stat)
     end

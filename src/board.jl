@@ -69,78 +69,80 @@ function reflect_vertical(b::Board)
 end
 
 function move(b::Board, opcode::Int)
+    before = Board(copy(b.tile))
     if opcode == 0
-        return move_up(b)
+        r = move_up(b)
     elseif opcode == 1
-        return move_right(b)
+        r = move_right(b)
     elseif opcode == 2
-        return move_down(b)
+        r = move_down(b)
     elseif opcode == 3
-        return move_left(b)
+        r = move_left(b)
     else
-        return -1
+        r = -1
     end
+    return r
 end
 
-function check(a::Int, b::Int)
-    if a == 0 || b == 0
-        return 0
-    elseif abs(a - b) == 1 || a == b == 1
-        return max(a, b) + 1
-    else
-        return 0
-    end
-end
+# function check(a::Int, b::Int)
+#     if a == 0 || b == 0
+#         return 0
+#     elseif abs(a - b) == 1 || a == b == 1
+#         return max(a, b) + 1
+#     else
+#         return 0
+#     end
+# end
 
-function sert_0(f::Array{Int,1})::Array{Int,1}
-    z = -1
-    for i ∈ 1:4
-        if z == -1 && f[i] == 0
-            z = i
-        elseif z ≠ -1 && f[i] ≠ 0
-            f[i], f[z] = f[z], f[i]
-            z += 1
-        end
-    end
-    return f
-end
+# function sert_0(f::Array{Int,1})::Array{Int,1}
+#     z = -1
+#     for i ∈ 1:4
+#         if z == -1 && f[i] == 0
+#             z = i
+#         elseif z ≠ -1 && f[i] ≠ 0
+#             f[i], f[z] = f[z], f[i]
+#             z += 1
+#         end
+#     end
+#     return f
+# end
 
-function move_line(b::Array{Int,2}, l::Int)::Int
-    score::Int = 0
-    f = sert_0(b[l:l+3])
-    # println(f)
-    i = 1
-    while i < 4
-        z = check(f[i], f[i+1])
-        i+=1
-        if z ≠ 0
-            f[i-1], f[i] = z, 0
-            score+=Fib[z]
-            i+=1
-        end
-    end
-    # println(score)
-    if b[l:l+3] == sert_0(f)
-        return -1
-    end
-    b[l:l+3] = f
-    return score
-end
+# function move_line(b::Array{Int,2}, l::Int)::Int
+#     score::Int = 0
+#     f = sert_0(b[l:l+3])
+#     # println(f)
+#     i = 1
+#     while i < 4
+#         z = check(f[i], f[i+1])
+#         i+=1
+#         if z ≠ 0
+#             f[i-1], f[i] = z, 0
+#             score+=Fib[z]
+#             i+=1
+#         end
+#     end
+#     # println(score)
+#     if b[l:l+3] == sert_0(f)
+#         return -1
+#     end
+#     b[l:l+3] = f
+#     return score
+# end
 
-function my_move_up(b::Array{Int,2})::Int
-    score::Int = 0
-    flag = 4
-    for i ∈ 1:4:16
-        s = move_line(b, i)
-        if s == -1
-            flag -= 1
-        else
-            score+= s
-        end
-    end
-    return flag==0 ? -1 : score
-end
-my_move_up(b::Board)::Int = my_move_up(b.tile)
+# function my_move_up(b::Array{Int,2})::Int
+#     score::Int = 0
+#     flag = 4
+#     for i ∈ 1:4:16
+#         s = move_line(b, i)
+#         if s == -1
+#             flag -= 1
+#         else
+#             score+= s
+#         end
+#     end
+#     return flag==0 ? -1 : score
+# end
+# my_move_up(b::Board)::Int = my_move_up(b.tile)
 
 function move_left(b::Array{Int,2})::Int
     prev = copy(b)

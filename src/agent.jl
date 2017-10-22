@@ -9,7 +9,7 @@ struct State
     reward::Int
 end
 
-function ftuple(s::T) where T<:SubArray
+function ftuple(s::T)::Int where T<:SubArray
     return s[1]*25^3 + s[2]*25^2 + s[3]*25 + s[4] + 1
 end
 
@@ -27,12 +27,12 @@ end
 
 abstract type AbstractAgent end
 
-function ParseProperty(arg::String = "")::Dict{String, Union{Int, String}}
-    property = Dict{String, Union{Int, String}}()
+function ParseProperty(arg::String = "")::Dict{String, Union{Int, String, Float64}}
+    property = Dict{String, Union{Int, String, Float64}}()
     for prop ∈ split(arg)
         pair = split(prop, "=")
         t = parse(pair[2])
-        if typeof(t) != Int
+        if typeof(t) != Int && typeof(t) != Float64
             t = String(pair[2])
         end
         property[pair[1]] = t
@@ -42,7 +42,7 @@ end
 
 
 struct Agent <: AbstractAgent
-    property::Dict{String, Union{Int, Symbol}}
+    property::Dict{String, Union{Int, Symbol, Float64}}
     function Agent(arg::String = "")
         property = ParseProperty(arg)
         return new(property)
@@ -61,7 +61,7 @@ check_for_win(A::AbstractAgent, b::Board)::Bool = false
 
 
 struct RndEnv <: AbstractAgent
-    property::Dict{String, Union{Int, String}}
+    property::Dict{String, Union{Int, String, Float64}}
     rng::MersenneTwister
     function RndEnv(arg::String = "")
         property = ParseProperty(arg)
@@ -87,8 +87,8 @@ end
 
 
 mutable struct Player <: AbstractAgent
-    property::Dict{String, Union{Int, String}}
-    α::Float32
+    property::Dict{String, Union{Int, String, Float64}}
+    α::Float64
     rng::MersenneTwister
     weights::Vector{Weight}
     episode::Vector{State}
@@ -98,7 +98,7 @@ mutable struct Player <: AbstractAgent
         seed = get(property, "seed", -1)
         rng =  seed == -1 ? srand() : MersenneTwister(seed)
         loaded = get(property, "load", nothing)
-        α = get(property, "alpha", 0.0025f0)
+        α = get(property, "alpha", 0.0025)
         P = new(property, α ,rng, Vector{Weight}(0), Vector{State}(0))
         if loaded != nothing
             load_weights(P, loaded)
@@ -113,7 +113,7 @@ mutable struct Player <: AbstractAgent
 end
 
 function get_weight(A::Player, ntuple::NTuple{8,Tuple{Int64,Int64}})
-    Sum = 0.0f0
+    Sum = 0.0
     for st ∈ ntuple
         Sum+= A.weights[st[2]][st[1]]
     end
@@ -127,8 +127,17 @@ end
 function close_episode(A::Player, flag::String)
     w = A.weights
     for i ∈ size(A.episode,1):-1:1
-        for Vn ∈ zip(A.episode[i].before, A.episode[i].after)
-            w[Vn[1][2]][Vn[1][1]]+= A.α * (A.episode[i].reward + w[Vn[2][2]][Vn[2][1]] - w[Vn[1][2]][Vn[1][1]])
+        # for Vn ∈ zip(A.episode[i].before, A.episode[i].after)
+        #     #println("before: $(Vn[1]), after: $(Vn[2]), Vi: $(w[Vn[1][2]][Vn[1][1]]), Vi+1: $(w[Vn[2][2]][Vn[2][1]])")
+        #     w[Vn[1][2]][Vn[1][1]]+= A.α * (A.episode[i].reward + w[Vn[2][2]][Vn[2][1]] - w[Vn[1][2]][Vn[1][1]])
+        # end
+        for V ∈ A.episode[i].after
+            if i == size(A.episode,1)
+                vn = 0
+            else
+                vn = get_weight(A, A.episode[i+1].after)
+            end
+            w[V[2]][V[1]] += A.α * (A.episode[i].reward/ 8.0  + vn - w[V[2]][V[1]] ) / 8.0
         end
     end
 end
@@ -173,6 +182,7 @@ function take_action(A::Player, b::Board)
         end
         ntuple = ftuple(before)
         V = reward + get_weight(A, ntuple)
+        # push!(a, V)
         if V > MaxVal
             MaxVal = V
             MaxOP = op
@@ -180,6 +190,7 @@ function take_action(A::Player, b::Board)
             R = reward
         end
     end
+    #println(a)
     if MaxOP != -1
         push!(A.episode, State(old, after,
                                Action(MaxOP), R))

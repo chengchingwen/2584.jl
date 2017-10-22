@@ -23,9 +23,11 @@ Base.:(==)(a::Action, b::Action) =  ==(a.opcode, b.opcode)
 
 
 function apply(a::Action, b::Board)::Int
-    if mod(a.opcode,4) == a.opcode
+    if a.opcode == -1
+        return -1
+    elseif (a.opcode & 0b11 ) == a.opcode
         return move(b,a.opcode)
-    elseif b(mod(a.opcode, 16)) == 0
+    elseif b(a.opcode & 0x0f) == 0
         i,j = fldmod(a.opcode & 0x0f,4)
         b.tile[i+1,j+1] = a.opcode >> 4
         return 0

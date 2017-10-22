@@ -1,11 +1,11 @@
-type Weight <: AbstractArray{Float32, 1}
+type Weight <: AbstractArray{Float64, 1}
     length::Int
-    value::Array{Float32, 1}
-    Weight() = new(0, Float32[])
-    Weight(len::Int) = new( len, zeros(Float32, len))
+    value::Array{Float64, 1}
+    Weight() = new(0, Float64[])
+    Weight(len::Int) = new( len, zeros(Float64, len))
     function Weight(w::Weight)
         W = new( w.length, w.value)
-        w.value = Float32[]
+        w.value = Float64[]
         return W
     end
 end
@@ -14,7 +14,7 @@ end
 Base.size(w::Weight) = Base.size(w.value)
 Base.getindex(w::Weight, i::Int) = w.value[i]
 Base.getindex(w::Weight, i::Number) = w[conver(Int, i)]
-Base.setindex!(w::Weight, f::Float32, i::Int) = (w.value[i] = f)
+Base.setindex!(w::Weight, f::Float64, i::Int) = (w.value[i] = f)
 
 
 function Base.write(stream::IO, w::Weight)
@@ -34,7 +34,7 @@ function Base.read(stream::IO, w::Weight)
     w.length = s
     resize!(w.value, s)
     for i ∈ 1:s
-        w[i] = read(stream, Float32)
+        w[i] = read(stream, Float64)
     end
     return stream
 end
