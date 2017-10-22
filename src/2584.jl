@@ -111,6 +111,8 @@ function main()
         run_game(stat, play, evil)
     end
 
+    save_weights(play, play.property["save"])
+    
     if summary
         Summary(stat)
     end

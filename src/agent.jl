@@ -29,14 +29,14 @@ abstract type AbstractAgent end
 
 function ParseProperty(arg::String = "")::Dict{String, Union{Int, String}}
     property = Dict{String, Union{Int, String}}()
-     for prop ∈ split(arg)
-         pair = split(prop, "=")
-         t = parse(pair[2])
-         if typeof(t) == Symbol
-             t = String(t)
-         end
-         property[pair[1]] = t
-     end
+    for prop ∈ split(arg)
+        pair = split(prop, "=")
+        t = parse(pair[2])
+        if typeof(t) != Int
+            t = String(pair[2])
+        end
+        property[pair[1]] = t
+    end
     return property
 end
 
@@ -141,13 +141,14 @@ function load_weights(A::Player, path::String)
         s = read(f, Int)
         resize!(A.weights, s)
         for i ∈ 1:s
-            A.weights[i] = read(f, Weight)
+            A.weights[i] = Weight(0)
+            read(f, A.weights[i])
         end
         close(f)
     end
 end
 
-function save_weights(A::Player, parg::String)
+function save_weights(A::Player, path::String)
     open(path, "w") do f
         if !isopen(f)
             error("cat not open $path")
