@@ -16,12 +16,12 @@ end
 function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
     a1 = (ftuple(@view b[:, 1]), 1)
     a2 = (ftuple(@view b[:, 2]), 2)
-    a3 = (ftuple(@view b[end:-1:1, 3]), 2)
-    a4 = (ftuple(@view b[end:-1:1, 4]), 1)
-    a5 = (ftuple(@view b[1, end:-1:1]), 1)
-    a6 = (ftuple(@view b[2, end:-1:1]), 2)
-    a7 = (ftuple(@view b[3, :]), 2)
-    a8 = (ftuple(@view b[4, :]), 1)
+    a3 = (ftuple(@view b[:, 3]), 2)
+    a4 = (ftuple(@view b[:, 4]), 1)
+    a5 = (ftuple(@view b[1, :]), 3)
+    a6 = (ftuple(@view b[2, :]), 4)
+    a7 = (ftuple(@view b[3, :]), 4)
+    a8 = (ftuple(@view b[4, :]), 3)
     return (a1,a2,a3,a4,a5,a6,a7,a8)
 end
 
@@ -103,9 +103,12 @@ mutable struct Player <: AbstractAgent
         if loaded != nothing
             load_weights(P, loaded)
         else
-            resize!(P.weights, 2)
+            resize!(P.weights, 4)
             P.weights[1] = Weight(25^4)
             P.weights[2] = Weight(25^4)
+            P.weights[3] = Weight(25^4)
+            P.weights[4] = Weight(25^4)
+
         end
         return P
     end
@@ -126,18 +129,12 @@ end
 
 function close_episode(A::Player, flag::String)
     w = A.weights
-    for i ∈ size(A.episode,1):-1:1
-        # for Vn ∈ zip(A.episode[i].before, A.episode[i].after)
-        #     #println("before: $(Vn[1]), after: $(Vn[2]), Vi: $(w[Vn[1][2]][Vn[1][1]]), Vi+1: $(w[Vn[2][2]][Vn[2][1]])")
-        #     w[Vn[1][2]][Vn[1][1]]+= A.α * (A.episode[i].reward + w[Vn[2][2]][Vn[2][1]] - w[Vn[1][2]][Vn[1][1]])
-        # end
-        for V ∈ A.episode[i].after
-            if i == size(A.episode,1)
-                vn = 0
-            else
-                vn = get_weight(A, A.episode[i+1].after)
-            end
-            w[V[2]][V[1]] += A.α * (A.episode[i].reward/ 8.0  + vn - w[V[2]][V[1]] ) / 8.0
+    for V ∈ A.episode[end].after
+        w[V[2]][V[1]] += A.α * (A.episode[end].reward  + 0 - w[V[2]][V[1]] )
+    end
+    for i ∈ size(A.episode,1)-1:-1:1
+        for Vn ∈ zip(A.episode[i].after, A.episode[i+1].after)
+            w[Vn[1][2]][Vn[1][1]]+= A.α * (A.episode[i].reward + w[Vn[2][2]][Vn[2][1]] - w[Vn[1][2]][Vn[1][1]])
         end
     end
 end
