@@ -41,6 +41,9 @@ Base.next(b::Board) = Base.next(b.tile)
 Base.done(b::Board) = Base.done(b.tile)
 Base.eltype(::Type{Board}) = Base.eltype(b.tile)
 Base.length(b::Board) = Base.length(b.tile)
+Base.size(b::Board) = Base.size(b.tile)
+Base.size(b::Board, i::Int) = Base.size(b.tile, i)
+Base.ndims(b::Board) = Base.ndims(b.tile)
 # Base.transpose(b::Board) = Base.transpose!(b.tile)
 function Base.transpose(b::Board)
     t = b.tile
@@ -222,3 +225,6 @@ function Base.show(io::IO, a::Board)
 end
 
 
+function Base.view(B::Board, I::Vararg{Any,N}) where {N}
+    return view(B.tile, I...)
+end

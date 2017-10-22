@@ -52,12 +52,20 @@ function Base.read(stream::IO, r::Record)
     return stream
 end
 
+#=
+    the·total·episodes·to·run$
+    the·block·size·of·statistic$
+    the·limit·of·saving·records$
 
+    note·that·total·>=·limit·>=·block
+=#
 mutable struct Statistic
     total::Int
     block::Int
+    limit::Int
+    count::Int
     data::Array{Record, 1}
-    Statistic(t::Int, b::Int = 0) = new(t, b≠0?b:t , [])
+    Statistic(t::Int, b::Int = 0, l::Int = 0) = new(t, b≠0?b:t , max(l, b), 0, Record[])
 end
 
 function Base.show(s::Statistic)
@@ -114,17 +122,21 @@ function Summary(s::Statistic)
 end
 
 
-is_finished(s::Statistic) = size(s.data, 1) >= s.total
+is_finished(s::Statistic) = s.count >= s.total
 
 
 function open_episode(s::Statistic ,flag::String = "")
+    if s.limit ≠ 0 && s.count ≥ s.limit
+        deleteat!(s.data,1)
+    end
+    s.count +=1
     push!(s.data, Record())
     tick(s.data[end])
 end
 
 function close_episode(s::Statistic, flag::String = "")
     tock(s.data[end])
-    if mod(size(s.data, 1), s.block) == 0
+    if mod(s.count, s.block) == 0
         show(s)
     end
 end
@@ -156,7 +168,7 @@ end
 
 function Base.read(stream::IO, s::Statistic)
     si = read(stream, Int)
-    s.total = s.block = si
+    s.total = s.block = s.limit = s.count = si
     resize!(s.data::Array{Record}, si)
     for i ∈ 1:si
         s.data[i] = Record()

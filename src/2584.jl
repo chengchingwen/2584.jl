@@ -11,6 +11,9 @@ function parse_commandline(ARGS)
         "--block"
           arg_type = Int
           default = 0
+        "--limit"
+          arg_type = Int
+          default = 0
         "--play"
           help = "The arguments of player initialization."
           arg_type = String
@@ -57,6 +60,28 @@ function run_game(stat::Statistic, play::Player, evil::RndEnv)
     return
 end
 
+function Load(S::Statistic, load::String)::Statistic
+    open(load, "r") do f
+        if !isopen(f)
+            error("can not open $load")
+        end
+        read(f, S)
+        close(f)
+    end
+    return S
+end
+
+function Save(S::Statistic, save::String)
+    open(save, "w") do f
+        if !isopen(f)
+            error("can not open $save")
+        end
+        write(f, S)
+        flush(f)
+        close(f)
+    end
+end
+
 function main()
 # Base.@ccallable function julia_main(ARGS::Vector{String})::Cint
     println("2584 Demo: $(basename(@__FILE__)) $(join(ARGS, ' '))\n")
@@ -65,6 +90,7 @@ function main()
     # println("Parsed args:")
     total = parsed_args["total"]
     block = parsed_args["block"]
+    limit = parsed_args["limit"]
     play_args = parsed_args["play"]
     evil_args = parsed_args["evil"]
     load = parsed_args["load"]
@@ -76,13 +102,7 @@ function main()
     stat = Statistic(total, block)
     if load != nothing
         #load something
-        open(load, "r") do f
-            if !isopen(f)
-                return -1
-            end
-            read(f, stat)
-            close(f)
-        end
+        Load(stat, load)
     end
     play = Player(play_args)
     evil = RndEnv(evil_args)
@@ -95,14 +115,7 @@ function main()
         Summary(stat)
     end
     if save != nothing
-        open(save, "w") do f
-            if !isopen(f)
-                return -1
-            end
-            write(f, stat)
-            flush(f)
-            close(f)
-        end
+        Save(stat, save)
     end
     return 0;
 end

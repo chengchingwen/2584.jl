@@ -5,7 +5,7 @@ include("./board.jl")
 struct Action
     opcode::Int
     Action() = new(-1)
-    Action(x) = new(x)
+    Action(x::Int) = new(x)
     Action(a::Action) = Action(a.opcode)
 end
 
@@ -13,6 +13,14 @@ end
 function (a::Action)()::Int
     return a.opcode
 end
+
+Base.:<(a::Action, b::Action) = <(a.opcode, b.opcode)
+Base.:<=(a::Action, b::Action) = <=(a.opcode, b.opcode)
+Base.:>(a::Action, b::Action) = >(a.opcode, b.opcode)
+Base.:>=(a::Action, b::Action) = >=(a.opcode, b.opcode)
+Base.:!=(a::Action, b::Action) = !=(a.opcode, b.opcode)
+Base.:(==)(a::Action, b::Action) =  ==(a.opcode, b.opcode)
+
 
 function apply(a::Action, b::Board)::Int
     if mod(a.opcode,4) == a.opcode
