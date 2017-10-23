@@ -171,7 +171,8 @@ function save_weights(A::Player, path::String)
 end
 
 function take_action(A::Player, b::Board)
-    R = MaxOP = MaxVal = -1
+    R = MaxOP = -1
+    MaxVal = -Inf
     old = after = ftuple(b)
     for op ∈ 0:3
         before = Board(b)
@@ -180,7 +181,7 @@ function take_action(A::Player, b::Board)
             continue
         end
         ntuple = ftuple(before)
-        V = reward + get_weight(A, ntuple)
+        V = float(reward) + get_weight(A, ntuple)
         # push!(a, V)
         if V > MaxVal
             MaxVal = V
