@@ -127,7 +127,6 @@ mutable struct Player <: AbstractAgent
             P.weights[2] = Weight(25^4)
             P.weights[3] = Weight(25^4)
             P.weights[4] = Weight(25^4)
-
         end
         return P
     end
@@ -149,13 +148,16 @@ end
 function close_episode(A::Player, flag::String)
     w = A.weights
     for V ∈ A.episode[end].after
-        w[V[2]][V[1]] += A.α * (A.episode[end].reward  + 0 - w[V[2]][V[1]] )
+        w[V[2]][V[1]] += A.α * (0  + 0 - w[V[2]][V[1]] )
     end
     for i ∈ size(A.episode,1)-1:-1:1
-        for Vn ∈ zip(A.episode[i].after, A.episode[i+1].after)
-            w[Vn[1][2]][Vn[1][1]]+= A.α * (A.episode[i].reward + w[Vn[2][2]][Vn[2][1]] - w[Vn[1][2]][Vn[1][1]])
+        W = get_weight(A, A.episode[i+1].after)
+        wi = get_weight(A, A.episode[i].after)
+        for Vn ∈ A.episode[i].after
+            w[Vn[2]][Vn[1]]+= A.α * (A.episode[i+1].reward + W - wi)
         end
     end
+
 end
 
 function load_weights(A::Player, path::String)
