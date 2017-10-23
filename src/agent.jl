@@ -9,39 +9,54 @@ struct State
     reward::Int
 end
 
-# function ftuple(s::T)::Int where T<:SubArray
-#     return s[1]*25^3 + s[2]*25^2 + s[3]*25 + s[4] + 1
-# end
+function ftuple(s::T)::Int where T<:SubArray
+    return s[1]*25^3 + s[2]*25^2 + s[3]*25 + s[4] + 1
+end
 
-# function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
-#     a1 = (ftuple(@view b[:, 1]), 1)
-#     a2 = (ftuple(@view b[:, 2]), 2)
-#     a3 = (ftuple(@view b[:, 3]), 2)
-#     a4 = (ftuple(@view b[:, 4]), 1)
-#     a5 = (ftuple(@view b[1, :]), 3)
-#     a6 = (ftuple(@view b[2, :]), 4)
-#     a7 = (ftuple(@view b[3, :]), 4)
-#     a8 = (ftuple(@view b[4, :]), 3)
-#     return (a1,a2,a3,a4,a5,a6,a7,a8)
-# end
+function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
+    a1 = (ftuple(@view b[:, 1]), 1)
+    a2 = (ftuple(@view b[:, 2]), 2)
+    a3 = (ftuple(@view b[:, 3]), 2)
+    a4 = (ftuple(@view b[:, 4]), 1)
+    a5 = (ftuple(@view b[1, :]), 3)
+    a6 = (ftuple(@view b[2, :]), 4)
+    a7 = (ftuple(@view b[3, :]), 4)
+    a8 = (ftuple(@view b[4, :]), 3)
+    return (a1,a2,a3,a4,a5,a6,a7,a8)
+end
 
 function stuple(s::T)::Int where T<:SubArray
     return s[1]*25^5 + s[2]*25^4 + s[3]*25^3 + s[4]*25^2 + s[5]*25 + s[6] + 1
 end
 
 function stuple(b::Board)
-    a1 = (stuple(@view b[[1 2 3 4 5 6]]), 1)
-    a2 = (stuple(@view b[[5 6 7 8 9 10]]), 2)
-    a3 = (stuple(@view b[[9 10 11 12 13 14]]), 3)
-    a4 = (stuple(@view b[[1 2 3 4 5 6]]), 4)
-    a5 = (stuple(@view b[[1 2 3 4 7 8]]), 5)
-    a6 = (stuple(@view b[[5 6 7 8 11 12]]), 6)
-    a7 = (stuple(@view b[[9 10 11 12 15 16]]), 7)
-    a8 = (stuple(@view b[[1 5 9 13 10 14]]), 8)
-    a9 = (stuple(@view b[[2 6 10 14 11 15]]), 9)
-    a10 = (stuple(@view b[[3 7 11 15 12 16]]), 10)
-    a11 = (stuple(@view b[[1 2 3 4 5 6]]), 11)
-    a12 = (stuple(@view b[[1 2 3 4 5 6]]), 12)
+    a1 = (stuple(@view b[[1 2 3 4 8 7]]), 1)
+    a2 = (stuple(@view b[[5 6 7 8 12 11]]), 2)
+    a3 = (stuple(@view b[[9 10 11 12 16 15]]), 3)
+    a4 = (stuple(@view b[[4 3 2 1 5 6]]), 4)
+    a5 = (stuple(@view b[[8 7 6 5 9 10]]), 5)
+    a6 = (stuple(@view b[[12 11 10 9 13 14]]), 6)
+    a7 = (stuple(@view b[[1 5 9 13 14 10]]), 7)
+    a8 = (stuple(@view b[[2 6 10 14 15 11]]), 8)
+    a9 = (stuple(@view b[[3 7 11 15 16 12]]), 9)
+    a10 = (stuple(@view b[[13 9 5 1 2 6 ]]), 10)
+    a11 = (stuple(@view b[[14 10 6 2 3 7]]), 11)
+    a12 = (stuple(@view b[[15 11 7 3 4 8]]), 12)
+    a13 = (stuple(@view b[[13 14 15 16 12 11]]), 1)
+    a14 = (stuple(@view b[[9 10 11 12 8 7]]), 2)
+    a15 = (stuple(@view b[[5 6 7 8 4 3]]), 3)
+
+    a16 = (stuple(@view b[[4 3 2 1 5 6]]), 4)
+    a17 = (stuple(@view b[[8 7 6 5 9 10]]), 5)
+    a18 = (stuple(@view b[[12 11 10 9 13 14]]), 6)
+
+    a19 = (stuple(@view b[[1 5 9 13 14 10]]), 7)
+    a20 = (stuple(@view b[[2 6 10 14 15 11]]), 8)
+    a21 = (stuple(@view b[[3 7 11 15 16 12]]), 9)
+
+    a22 = (stuple(@view b[[13 9 5 1 2 6 ]]), 10)
+    a23 = (stuple(@view b[[14 10 6 2 3 7]]), 11)
+    a24 = (stuple(@view b[[15 11 7 3 4 8]]), 12)
 end
 
 abstract type AbstractAgent end
