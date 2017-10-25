@@ -1,4 +1,4 @@
-include("/home/peter/.julia/v0.6/ArgParse/src/ArgParse.jl")
+using ArgParse
 include("./statistic.jl")
 
 function parse_commandline(ARGS)
