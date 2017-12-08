@@ -78,7 +78,7 @@ function take_action(A::RndEnv, b::Board)
     shuffle!(A.rng, space)
     for pos ∈ space
         if b(pos) == 0
-            tile = rand(A.rng, 0:9) != 0 ? 1 : 2
+            tile = rand(A.rng, 0:3) != 0 ? 1 : 3
             return place(tile, pos)
         end
     end
