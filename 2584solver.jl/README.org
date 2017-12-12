@@ -1,0 +1,2 @@
+* 2584 solver
+  Solver for expectimax on before-state & after-state for 2584 with 2x3 board size.
