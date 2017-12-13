@@ -170,6 +170,84 @@ function save_weights(A::Player, path::String)
     end
 end
 
+
+abstract type  StateType end
+
+struct Before <: StateType end
+struct After <: StateType end
+
+#::Type{After}
+function expectmax(A::Player, B::Board, ::Type{After})::Float64
+    α = 0.
+    s = empty(B)
+    # if length(s) > 8
+    #     return α
+    # end
+    pc = 1. / float(length(s))
+    
+    for p ∈ s
+        b = Board(copy(B.tile))
+        apply(place(1, p), b)
+        α += 0.75 * pc * expectmax(A, b, Before)
+        b′ = Board(copy(B.tile))
+        apply(place(3, p), b′)
+        α += 0.25 * pc * expectmax(A, b′, Before)
+    end
+    
+    #=
+    for p ∈ s
+        b = Board(copy(B.tile))
+        apply(place(1, p), b)
+        ntuple = ftuple(b)
+        α += 0.75 * pc * get_weight(A, ntuple)
+        b′ = Board(copy(B.tile))
+        apply(place(3, p), b′)
+        ntuple = ftuple(b′)
+        α += 0.25 * pc * get_weight(A, ntuple)
+    end
+    =#
+
+    #=
+    #parallelized
+    α += (@parallel (+) for p ∈ s
+          b = Board(copy(B.tile))
+          apply(place(1, p), b)
+          ntuple = ftuple(b)
+          0.75 * pc * get_weight(A, ntuple)#expectmax(A, b, Before)
+          end)::Float64
+
+    α += (@parallel (+) for p ∈ s
+          b = Board(copy(B.tile))
+          apply(place(3, p), b)
+          ntuple = ftuple(b)
+          0.25 * pc * get_weight(A, ntuple)#expectmax(A, b, Before)
+          end)::Float64
+    =#
+    #S.tt[After][Tuple(B.tile)] = α
+    return α
+end
+
+#::Type{Before}
+function expectmax(A::Player, B::Board, ::Type{Before})::Float64
+    α = -Inf
+    for m ∈ 0:3
+        b = Board(copy(B.tile))
+        k = apply(Action(m), b)
+        if k == -1
+            continue
+        end
+        ntuple = ftuple(b)
+        α = max(α, k + get_weight(A, ntuple))
+    end
+    if isinf(α)
+        #S.tt[Before][Tuple(B.tile)] = 0.
+        return 0.
+    end
+    #S.tt[Before][Tuple(B.tile)] = α
+    return α
+end
+
+
 function take_action(A::Player, b::Board)
     R = MaxOP = -1
     MaxVal = -Inf
@@ -181,7 +259,8 @@ function take_action(A::Player, b::Board)
             continue
         end
         ntuple = ftuple(before)
-        V = float(reward) + get_weight(A, ntuple)
+        #V = float(reward) + get_weight(A, ntuple) + expectmax(A, before, After)
+        V = float(reward) + expectmax(A, before, After)
         # push!(a, V)
         if V > MaxVal
             MaxVal = V
@@ -200,4 +279,3 @@ function take_action(A::Player, b::Board)
 end
 
 
-#end
