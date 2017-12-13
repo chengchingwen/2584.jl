@@ -20,7 +20,9 @@ Base.getindex(F::Fibonacci, i::Number) = F[convert(Int, i)]
 
 Fib = Fibonacci(25)
 
-mutable struct Board
+abstract type AbstractBoard end
+
+mutable struct Board <: AbstractBoard
     tile::Array{Int,2}
     Board() = new(zeros(Int, 4,4))
     Board(b::Board) = new(copy(b.tile))

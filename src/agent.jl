@@ -13,6 +13,10 @@ function ftuple(s::T)::Int where T<:SubArray
     return s[1]*25^3 + s[2]*25^2 + s[3]*25 + s[4] + 1
 end
 
+function ftuple(s::UInt32)::Int
+    return Int((s >> 24) & 0xff) *25^3 + Int((s >> 16) & 0xff) *25^2 + Int((s >> 8) & 0xff) *25^1 + Int(s  & 0xff)  + 1
+end
+
 function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
     a1 = (ftuple(@view b[:, 1]), 1)
     a2 = (ftuple(@view b[:, 2]), 2)
@@ -24,6 +28,20 @@ function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
     a8 = (ftuple(@view b[4, :]), 3)
     return (a1,a2,a3,a4,a5,a6,a7,a8)
 end
+
+function ftuple(b::BitBoard)::NTuple{8,Tuple{Int64,Int64}}
+    b′ = b'
+    a1 = (ftuple(GetRow(b′ , 0)), 1)
+    a2 = (ftuple(GetRow(b′ , 1)), 2)
+    a3 = (ftuple(GetRow(b′ , 2)), 2)
+    a4 = (ftuple(GetRow(b′ , 3)), 1)
+    a5 = (ftuple(GetRow(b , 0)), 3)
+    a6 = (ftuple(GetRow(b , 1)), 4)
+    a7 = (ftuple(GetRow(b , 2)), 4)
+    a8 = (ftuple(GetRow(b , 3)), 3)
+    return (a1,a2,a3,a4,a5,a6,a7,a8)
+end
+
 
 abstract type AbstractAgent end
 
@@ -55,7 +73,8 @@ end
 
 open_episode(A::AbstractAgent, flag::String) = ()
 close_episode(A::AbstractAgent, flag::String) = ()
-check_for_win(A::AbstractAgent, b::Board)::Bool = false
+check_for_win(A::AbstractAgent, b::T) where T <: AbstractBoard = false
+
 
 #function take_action(A::Agent, b::Board)
 
@@ -73,7 +92,7 @@ struct RndEnv <: AbstractAgent
     RndEnv(::Void) = RndEnv()
 end
 
-function take_action(A::RndEnv, b::Board)
+function take_action(A::RndEnv, b::T) where T <: AbstractBoard
     space = collect(0:15)
     shuffle!(A.rng, space)
     for pos ∈ space
@@ -170,12 +189,12 @@ function save_weights(A::Player, path::String)
     end
 end
 
-function take_action(A::Player, b::Board)
+function take_action(A::Player, b::T) where T <: AbstractBoard
     R = MaxOP = -1
     MaxVal = -Inf
     old = after = ftuple(b)
     for op ∈ 0:3
-        before = Board(b)
+        before = T(b)
         reward = move(before, op)
         if reward == -1
             continue

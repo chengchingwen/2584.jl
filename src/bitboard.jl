@@ -1,8 +1,8 @@
 using JLD
 include("./board.jl")
-precompute = load("./precomputemove.jld", "PrecomputeLeft")
+precompute = load("$(@__DIR__)/precomputemove.jld", "PrecomputeLeft")
 
-mutable struct BitBoard
+mutable struct BitBoard <: AbstractBoard
     tile::UInt128
     BitBoard() = new(UInt128(0))
     BitBoard(x::UInt128) = new(x)
@@ -86,19 +86,19 @@ function move_left(b::BitBoard)::Int
     a4, r4 = get(precompute, row4, (row4, -1))::Tuple{UInt32, Int}
     α = 0
     if r1 == -1
-        r1 == 0
+        r1 = 0
         α+=1
     end
     if r2 == -1
-        r2 == 0
+        r2 = 0
         α+=1
     end
     if r3 == -1
-        r3 == 0
+        r3 = 0
         α+=1
     end
     if r4 == -1
-        r4 == 0
+        r4 = 0
         α+=1
     end
     if  α != 4
@@ -156,7 +156,7 @@ function empty(b::BitBoard)::Vector{Int}
     return a
 end
 
-function Base.show(io::IO, b::BitBoard)
+function Base.show(io::IO, t::BitBoard)
     println(io,"+------------------------+")
     for i in 0:3 
         @printf "|%6d%6d%6d%6d|\n" map((x)-> x==0?0:Fib[x], (t(i,0), t(i,1), t(i,2), t(i,3)))...
