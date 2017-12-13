@@ -197,7 +197,7 @@ struct Before <: StateType end
 struct After <: StateType end
 
 #::Type{After}
-function expectmax(A::Player, B::Board, ::Type{After})::Float64
+function expectmax(A::Player, B::T, ::Type{After})::Float64 where T <: AbstractBoard
     α = 0.
     s = empty(B)
     # if length(s) > 8
@@ -206,10 +206,10 @@ function expectmax(A::Player, B::Board, ::Type{After})::Float64
     pc = 1. / float(length(s))
     
     for p ∈ s
-        b = Board(copy(B.tile))
+        b = T(B)
         apply(place(1, p), b)
         α += 0.75 * pc * expectmax(A, b, Before)
-        b′ = Board(copy(B.tile))
+        b′ = T(B)
         apply(place(3, p), b′)
         α += 0.25 * pc * expectmax(A, b′, Before)
     end
@@ -248,10 +248,10 @@ function expectmax(A::Player, B::Board, ::Type{After})::Float64
 end
 
 #::Type{Before}
-function expectmax(A::Player, B::Board, ::Type{Before})::Float64
+function expectmax(A::Player, B::T, ::Type{Before})::Float64 where T <: AbstractBoard
     α = -Inf
     for m ∈ 0:3
-        b = Board(copy(B.tile))
+        b = T(B)
         k = apply(Action(m), b)
         if k == -1
             continue
