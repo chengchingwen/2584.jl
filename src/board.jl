@@ -20,7 +20,9 @@ Base.getindex(F::Fibonacci, i::Number) = F[convert(Int, i)]
 
 Fib = Fibonacci(25)
 
-mutable struct Board
+abstract type AbstractBoard end
+
+mutable struct Board <: AbstractBoard
     tile::Array{Int,2}
     Board() = new(zeros(Int, 4,4))
     Board(b::Board) = new(copy(b.tile))
@@ -69,7 +71,6 @@ function reflect_vertical(b::Board)
 end
 
 function move(b::Board, opcode::Int)
-    before = Board(copy(b.tile))
     if opcode == 0
         r = move_up(b)
     elseif opcode == 1
@@ -217,6 +218,49 @@ function rotate_left(b::Board)
     # b.tile = rotl90(b.tile)
 end
 
+function empty(b::Board)::Vector{Int}
+    a = Vector{Int}()
+    for i in 0:15
+        if b(i) == 0
+            push!(a, i)
+        end
+    end
+    return a
+end
+
+function tobit(b::Board)
+    v = UInt128(0)
+    for i in 1:4
+        k = view(b, i, :)
+        t = (UInt128(k[1]) << 24) | (UInt128(k[2]) << 16) | (UInt128(k[3]) << 8) | UInt128(k[4])
+        v |= t << (4-i) * 32
+    end
+    return v
+end
+
+function toboard(k::UInt64)
+    v=  Board()
+    for i in 1:4
+        m = (k >> 16 * (4-i)) & 0xffff
+        v.tile[i,1] = (m >> 4*3) & 0xf
+        v.tile[i,2] = (m >> 4*2) & 0xf
+        v.tile[i,3] = (m >> 4) & 0xf
+        v.tile[i,4] = m & 0xf
+    end
+    return v
+end
+
+function toboard(k::UInt128)
+    v=  Board()
+    for i in 1:4
+        m = (k >> 32 * (4-i)) & 0xffffffff
+        v.tile[i,1] = (m >> 8*3) & 0xff
+        v.tile[i,2] = (m >> 8*2) & 0xff
+        v.tile[i,3] = (m >> 8) & 0xff
+        v.tile[i,4] = m & 0xff
+    end
+    return v
+end
 
 function Base.show(io::IO, a::Board)
     println(io,"+------------------------+")
