@@ -1,4 +1,6 @@
+using JLD
 include("./board.jl")
+precompute = load("./precomputemove.jld", "PrecomputeLeft")
 
 mutable struct BitBoard
     tile::UInt128
@@ -8,11 +10,11 @@ mutable struct BitBoard
 end
 
 function (b::BitBoard)(i::Int)
-    return Int(b.tile >> (15 - i) * 8) & 0xff
+    return Int((b.tile >> ((15 - i) * 8)) & 0xff)
 end
 
 function (b::BitBoard)(i::Int, j::Int)
-    return b( i * 4 + j )
+    return b( (i * 4) + j )
 end
 
 
@@ -49,6 +51,8 @@ function reflect_horizontal(b::BitBoard)
     x = b.tile
     t = (x ⊻ (x >> 16)) & 0x0000ffff0000ffff0000ffff0000ffff
     x ⊻= t ⊻ (t << 16)
+    t = (x ⊻ (x >> 8))  & 0x00ff00ff00ff00ff00ff00ff00ff00ff
+    x ⊻= t ⊻ (t << 8)
     b.tile = x
     return b
 end
@@ -69,15 +73,41 @@ end
 
 toboard(b::BitBoard) = toboard(b.tile)
 
-function move_left(B::BitBoard)::Int
-    b = toboard(B)
-    r = move_left(b)
-    if r != -1
-        B.tile = tobit(b)
-    end
-    return r
-end
+GetRow(t::BitBoard, r::Int)::UInt32 = UInt32((t.tile >> (32 * (3 - r))) & 0xffffffff)
 
+function move_left(b::BitBoard)::Int
+    row1 = GetRow(b, 0)
+    row2 = GetRow(b, 1)
+    row3 = GetRow(b, 2)
+    row4 = GetRow(b, 3)
+    a1, r1 = get(precompute, row1, (row1, -1))::Tuple{UInt32, Int}
+    a2, r2 = get(precompute, row2, (row2, -1))::Tuple{UInt32, Int}
+    a3, r3 = get(precompute, row3, (row3, -1))::Tuple{UInt32, Int}
+    a4, r4 = get(precompute, row4, (row4, -1))::Tuple{UInt32, Int}
+    α = 0
+    if r1 == -1
+        r1 == 0
+        α+=1
+    end
+    if r2 == -1
+        r2 == 0
+        α+=1
+    end
+    if r3 == -1
+        r3 == 0
+        α+=1
+    end
+    if r4 == -1
+        r4 == 0
+        α+=1
+    end
+    if  α != 4
+        b.tile = (UInt128(a1) << 96) | (UInt128(a2) << 64) | (UInt128(a3) << 32) | UInt128(a4)
+        return r1+r2+r3+r4
+    else
+        return -1
+    end
+end
 
 function move_right(B::BitBoard)::Int
     reflect_horizontal(B)
@@ -116,6 +146,23 @@ function move(b::BitBoard, opcode::Int)
 end
 
 
+function empty(b::BitBoard)::Vector{Int}
+    a = Vector{Int}()
+    for i in 0:15
+        if b(i) == 0
+            push!(a, i)
+        end
+    end
+    return a
+end
+
+function Base.show(io::IO, b::BitBoard)
+    println(io,"+------------------------+")
+    for i in 0:3 
+        @printf "|%6d%6d%6d%6d|\n" map((x)-> x==0?0:Fib[x], (t(i,0), t(i,1), t(i,2), t(i,3)))...
+    end
+    println(io,"+------------------------+")
+end
 
 
 

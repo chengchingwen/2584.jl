@@ -236,6 +236,18 @@ function tobit(b::Board)
     return v
 end
 
+function toboard(k::UInt64)
+    v=  Board()
+    for i in 1:4
+        m = (k >> 16 * (4-i)) & 0xffff
+        v.tile[i,1] = (m >> 4*3) & 0xf
+        v.tile[i,2] = (m >> 4*2) & 0xf
+        v.tile[i,3] = (m >> 4) & 0xf
+        v.tile[i,4] = m & 0xf
+    end
+    return v
+end
+
 function toboard(k::UInt128)
     v=  Board()
     for i in 1:4
@@ -243,7 +255,7 @@ function toboard(k::UInt128)
         v.tile[i,1] = (m >> 8*3) & 0xff
         v.tile[i,2] = (m >> 8*2) & 0xff
         v.tile[i,3] = (m >> 8) & 0xff
-        v.tile[i,4] = m & 0xf
+        v.tile[i,4] = m & 0xff
     end
     return v
 end
