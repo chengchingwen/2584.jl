@@ -30,7 +30,7 @@ function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
 end
 
 function ftuple(b::BitBoard)::NTuple{8,Tuple{Int64,Int64}}
-    b′ = b'
+    b′ = transpose(b)::BitBoard
     a1 = (ftuple(GetRow(b′ , 0)), 1)
     a2 = (ftuple(GetRow(b′ , 1)), 2)
     a3 = (ftuple(GetRow(b′ , 2)), 2)
@@ -197,21 +197,40 @@ struct Before <: StateType end
 struct After <: StateType end
 
 #::Type{After}
-function expectmax(A::Player, B::T, ::Type{After})::Float64 where T <: AbstractBoard
+function expectmax(A::Player, B::T, d::Int, ::Type{After})::Float64 where T <: AbstractBoard
+    if d == 0
+        ntuple = ftuple(B)
+        return get_weight(A, ntuple)
+    end
     α = 0.
     s = empty(B)
-    # if length(s) > 8
-    #     return α
-    # end
+
+    ignore1 = false
+
+    # if length(s) < 3
+    #     d+=1
+    #else
+    if length(s) > 8
+        ignore1 = true
+    end
+
     pc = 1. / float(length(s))
-    
+    if !ignore1
+        for p ∈ s
+            b = T(B)
+            apply(place(1, p), b)
+            α += 0.75 * pc * expectmax(A, b, d-1, Before)
+        end
+    end
+
     for p ∈ s
-        b = T(B)
-        apply(place(1, p), b)
-        α += 0.75 * pc * expectmax(A, b, Before)
+        # b = T(B)
+        # apply(place(1, p), b)
+        # α += 0.75 * pc * expectmax(A, b, d-1, Before)
         b′ = T(B)
         apply(place(3, p), b′)
-        α += 0.25 * pc * expectmax(A, b′, Before)
+        α += 0.25 * pc * expectmax(A, b′, d-1, Before)
+        #α += pc * expectmax(A, b′, d-1,Before)
     end
     
     #=
@@ -248,7 +267,11 @@ function expectmax(A::Player, B::T, ::Type{After})::Float64 where T <: AbstractB
 end
 
 #::Type{Before}
-function expectmax(A::Player, B::T, ::Type{Before})::Float64 where T <: AbstractBoard
+function expectmax(A::Player, B::T, d::Int, ::Type{Before})::Float64 where T <: AbstractBoard
+    if d == 0
+        ntuple = ftuple(B)
+        return get_weight(A, ntuple)
+    end
     α = -Inf
     for m ∈ 0:3
         b = T(B)
@@ -256,8 +279,9 @@ function expectmax(A::Player, B::T, ::Type{Before})::Float64 where T <: Abstract
         if k == -1
             continue
         end
-        ntuple = ftuple(b)
-        α = max(α, k + get_weight(A, ntuple))
+        # ntuple = ftuple(b)
+        # α = max(α, k + get_weight(A, ntuple))
+        α = max(α, k + expectmax(A, b, d-1, After))
     end
     if isinf(α)
         #S.tt[Before][Tuple(B.tile)] = 0.
@@ -282,8 +306,7 @@ function take_action(A::Player, b::T) where T <: AbstractBoard
         end
         ntuple = ftuple(before)
         #V = float(reward) + get_weight(A, ntuple) + expectmax(A, before, After)
-        V = float(reward) + expectmax(A, before, After)
-        # push!(a, V)
+        V = float(reward) + expectmax(A, before, 3, After)
         if V > MaxVal
             MaxVal = V
             MaxOP = op
@@ -291,7 +314,6 @@ function take_action(A::Player, b::T) where T <: AbstractBoard
             R = reward
         end
     end
-    #println(a)
     if MaxOP != -1
         push!(A.episode, State(old, after,
                                Action(MaxOP), R))
