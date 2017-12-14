@@ -1,6 +1,6 @@
 #module ACTION
 include("./board.jl")
-
+include("./bitboard.jl")
 
 struct Action
     opcode::Int
@@ -30,6 +30,19 @@ function apply(a::Action, b::Board)::Int
     elseif b(a.opcode & 0x0f) == 0
         i,j = fldmod(a.opcode & 0x0f,4)
         b.tile[i+1,j+1] = a.opcode >> 4
+        return 0
+    else
+        return -1
+    end
+end
+
+function apply(a::Action, b::BitBoard)::Int
+    if a.opcode == -1
+        return -1
+    elseif (a.opcode & 0b11 ) == a.opcode
+        return move(b,a.opcode)
+    elseif b(a.opcode & 0x0f) == 0
+        b.tile |= UInt128(a.opcode >> 4) << (8 * (15 - (a.opcode & 0x0f)))
         return 0
     else
         return -1

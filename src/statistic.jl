@@ -75,7 +75,7 @@ function Base.show(s::Statistic)
     it = size(s.data,1)
     for i ∈ 1:b
         path = s.data[it]
-        game = Board()
+        game = BitBoard()
         score = 0
         for act ∈ path
             score += apply(act, game)
@@ -142,7 +142,7 @@ function close_episode(s::Statistic, flag::String = "")
 end
 
 
-make_empty_board(s::Statistic) = Board()
+make_empty_board(s::Statistic) = BitBoard()
 save_action(s::Statistic, a::Action) = push!(s.data[end]::Record, a)::Array{Action,1}
 
 

@@ -1,4 +1,4 @@
-include("/home/peter/.julia/v0.6/ArgParse/src/ArgParse.jl")
+using ArgParse
 include("./statistic.jl")
 
 function parse_commandline(ARGS)
@@ -31,7 +31,7 @@ function parse_commandline(ARGS)
 end
 
 
-function Run(stat::Statistic, game::Board ,play::Player, evil::RndEnv)
+function Run(stat::Statistic, game::T ,play::Player, evil::RndEnv) where T <: AbstractBoard
     while true
         who = take_turns(stat, play, evil)
         move = take_action(who, game)
