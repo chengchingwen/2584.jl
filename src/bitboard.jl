@@ -18,7 +18,7 @@ function (b::BitBoard)(i::Int, j::Int)
 end
 
 
-function Base.transpose(b::BitBoard)
+function Base.transpose(b::BitBoard)::BitBoard
     x = b.tile
     t =  (x ⊻ (x >> 24)) & 0x00000000ff00ff0000000000ff00ff00
     x ⊻= t ⊻ (t << 24)
@@ -27,7 +27,7 @@ function Base.transpose(b::BitBoard)
     return BitBoard(x)
 end
 
-function Base.transpose!(b::BitBoard)
+function Base.transpose!(b::BitBoard)::BitBoard
     x = b.tile
     t =  (x ⊻ (x >> 24)) & 0x00000000ff00ff0000000000ff00ff00
     x ⊻= t ⊻ (t << 24)
