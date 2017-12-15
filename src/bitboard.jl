@@ -156,6 +156,8 @@ function empty(b::BitBoard)::Vector{Int}
     return a
 end
 
+tobit(b::BitBoard) = b.tile
+
 function Base.show(io::IO, t::BitBoard)
     println(io,"+------------------------+")
     for i in 0:3 
