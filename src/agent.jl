@@ -22,10 +22,10 @@ function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
     a2 = (ftuple(@view b[:, 2]), 2)
     a3 = (ftuple(@view b[:, 3]), 2)
     a4 = (ftuple(@view b[:, 4]), 1)
-    a5 = (ftuple(@view b[1, :]), 3)
-    a6 = (ftuple(@view b[2, :]), 4)
-    a7 = (ftuple(@view b[3, :]), 4)
-    a8 = (ftuple(@view b[4, :]), 3)
+    a5 = (ftuple(@view b[1, :]), 1)
+    a6 = (ftuple(@view b[2, :]), 2)
+    a7 = (ftuple(@view b[3, :]), 2)
+    a8 = (ftuple(@view b[4, :]), 1)
     return (a1,a2,a3,a4,a5,a6,a7,a8)
 end
 
@@ -35,10 +35,10 @@ function ftuple(b::BitBoard)::NTuple{8,Tuple{Int64,Int64}}
     a2 = (ftuple(GetRow(b′ , 1)), 2)
     a3 = (ftuple(GetRow(b′ , 2)), 2)
     a4 = (ftuple(GetRow(b′ , 3)), 1)
-    a5 = (ftuple(GetRow(b , 0)), 3)
-    a6 = (ftuple(GetRow(b , 1)), 4)
-    a7 = (ftuple(GetRow(b , 2)), 4)
-    a8 = (ftuple(GetRow(b , 3)), 3)
+    a5 = (ftuple(GetRow(b , 0)), 1)
+    a6 = (ftuple(GetRow(b , 1)), 2)
+    a7 = (ftuple(GetRow(b , 2)), 2)
+    a8 = (ftuple(GetRow(b , 3)), 1)
     return (a1,a2,a3,a4,a5,a6,a7,a8)
 end
 
@@ -69,34 +69,34 @@ function stuple(x::UInt32, y::UInt32)::Int
 end
 
 
-function stuple(b::BitBoard)::NTuple{24,Tuple{Int64,Int64}}
+function stuple(b::BitBoard)::NTuple{12,Tuple{Int64,Int64}}
     b′ = b'
     a1  = (stuple(GetRow(b′, 0), GetRow(b′, 1)), 1)
     a2  = (stuple(GetRow(b′, 1), GetRow(b′, 2)), 2)
     a3  = (stuple(GetRow(b′, 2), GetRow(b′, 3)), 3)
-    a4  = (stuple(GetRow(b′, 3), GetRow(b′, 2)), 4)
-    a5  = (stuple(GetRow(b′, 2), GetRow(b′, 1)), 5)
-    a6  = (stuple(GetRow(b′, 1), GetRow(b′, 0)), 6)
+    a4  = (stuple(GetRow(b′, 3), GetRow(b′, 2)), 1)
+    a5  = (stuple(GetRow(b′, 2), GetRow(b′, 1)), 2)
+    a6  = (stuple(GetRow(b′, 1), GetRow(b′, 0)), 3)
     a7  = (stuple(GetRow(b , 0), GetRow(b , 1)), 1)
     a8  = (stuple(GetRow(b , 1), GetRow(b , 2)), 2)
     a9  = (stuple(GetRow(b , 2), GetRow(b , 3)), 3)
-    a10 = (stuple(GetRow(b , 3), GetRow(b , 2)), 4)
-    a11 = (stuple(GetRow(b , 2), GetRow(b , 1)), 5)
-    a12 = (stuple(GetRow(b , 1), GetRow(b , 0)), 6)
-    a13 = (stuple(GetRow(b′, 0), GetRow(b′, 1) >> 16), 1)
-    a14 = (stuple(GetRow(b′, 1), GetRow(b′, 2) >> 16), 2)
-    a15 = (stuple(GetRow(b′, 2), GetRow(b′, 3) >> 16), 3)
-    a16 = (stuple(GetRow(b′, 3), GetRow(b′, 2) >> 16), 4)
-    a17 = (stuple(GetRow(b′, 2), GetRow(b′, 1) >> 16), 5)
-    a18 = (stuple(GetRow(b′, 1), GetRow(b′, 0) >> 16), 6)
-    a19 = (stuple(GetRow(b , 0), GetRow(b , 1) >> 16), 1)
-    a20 = (stuple(GetRow(b , 1), GetRow(b , 2) >> 16), 2)
-    a21 = (stuple(GetRow(b , 2), GetRow(b , 3) >> 16), 3)
-    a22 = (stuple(GetRow(b , 3), GetRow(b , 2) >> 16), 4)
-    a23 = (stuple(GetRow(b , 2), GetRow(b , 1) >> 16), 5)
-    a24 = (stuple(GetRow(b , 1), GetRow(b , 0) >> 16), 6)
+    a10 = (stuple(GetRow(b , 3), GetRow(b , 2)), 1)
+    a11 = (stuple(GetRow(b , 2), GetRow(b , 1)), 2)
+    a12 = (stuple(GetRow(b , 1), GetRow(b , 0)), 3)
+    # a13 = (stuple(GetRow(b′, 0), GetRow(b′, 1) >> 16), 1)
+    # a14 = (stuple(GetRow(b′, 1), GetRow(b′, 2) >> 16), 2)
+    # a15 = (stuple(GetRow(b′, 2), GetRow(b′, 3) >> 16), 3)
+    # a16 = (stuple(GetRow(b′, 3), GetRow(b′, 2) >> 16), 1)
+    # a17 = (stuple(GetRow(b′, 2), GetRow(b′, 1) >> 16), 2)
+    # a18 = (stuple(GetRow(b′, 1), GetRow(b′, 0) >> 16), 3)
+    # a19 = (stuple(GetRow(b , 0), GetRow(b , 1) >> 16), 1)
+    # a20 = (stuple(GetRow(b , 1), GetRow(b , 2) >> 16), 2)
+    # a21 = (stuple(GetRow(b , 2), GetRow(b , 3) >> 16), 3)
+    # a22 = (stuple(GetRow(b , 3), GetRow(b , 2) >> 16), 1)
+    # a23 = (stuple(GetRow(b , 2), GetRow(b , 1) >> 16), 2)
+    # a24 = (stuple(GetRow(b , 1), GetRow(b , 0) >> 16), 3)
     #return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16 , a17, a18, a19, a20, a21, a22, a23, a24)
-    return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16 , a17, a18, a19, a20, a21, a22, a23, a24)
+    return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
 end
 
 stuple(x::UInt128) = stuple(BitBoard(x))
@@ -155,8 +155,8 @@ function take_action(A::RndEnv, b::T) where T <: AbstractBoard
     shuffle!(A.rng, space)
     for pos ∈ space
         if b(pos) == 0
-            #tile = rand(A.rng, 0:3) != 0 ? 1 : 3
-            tile = rand(A.rng, 0:9) != 0 ? 1 : 2
+            tile = rand(A.rng, 0:3) != 0 ? 1 : 3
+            #tile = rand(A.rng, 0:9) != 0 ? 1 : 2
             return place(tile, pos)
         end
     end
@@ -181,17 +181,15 @@ mutable struct Player <: AbstractAgent
         if loaded != nothing
             load_weights(P, loaded)
         else
-            resize!(P.weights, 10)
+            resize!(P.weights, 5)
             P.weights[1] = Weight(25^4)
             P.weights[2] = Weight(25^4)
-            P.weights[3] = Weight(25^4)
-            P.weights[4] = Weight(25^4)
+            P.weights[3] = Weight(25^6)
+            P.weights[4] = Weight(25^6)
             P.weights[5] = Weight(25^6)
-            P.weights[6] = Weight(25^6)
-            P.weights[7] = Weight(25^6)
-            P.weights[8] = Weight(25^6)
-            P.weights[9] = Weight(25^6)
-            P.weights[10] = Weight(25^6)
+            # P.weights[6] = Weight(25^6)
+            # P.weights[7] = Weight(25^6)
+            # P.weights[8] = Weight(25^6)
         end
         return P
     end
@@ -206,10 +204,10 @@ function get_weight(A::Player, ntuple::NTuple{8,Tuple{Int64,Int64}})
     return Sum
 end
 
-function get_weight(A::Player, ntuple::NTuple{24,Tuple{Int,Int}})
+function get_weight(A::Player, ntuple::NTuple{12,Tuple{Int,Int}})
     Sum = 0.0
     for st ∈ ntuple
-        Sum+= A.weights[st[2]+4][st[1]]
+        Sum+= A.weights[st[2]+2][st[1]]
     end
     return Sum
 end
@@ -230,18 +228,20 @@ function close_episode(A::Player, flag::String)
         w[V[2]][V[1]] += A.α * (0  + 0 - w[V[2]][V[1]] )
     end
     for V ∈ stuple(A.episode[end].after)
-        w[V[2]+4][V[1]] += A.α * (0  + 0 - w[V[2]+4][V[1]] )
+        w[V[2]+2][V[1]] += A.α * (0  + 0 - w[V[2]+2][V[1]] )
     end
     for i ∈ size(A.episode,1)-1:-1:1
-        W  = get_weight(A, ftuple(A.episode[i+1].after))
-        wi = get_weight(A, ftuple(A.episode[i].after))
+        # W  = get_weight(A, ftuple(A.episode[i+1].after))
+        # wi = get_weight(A, ftuple(A.episode[i].after))
+        W  = get_weight(A, A.episode[i+1].after)
+        wi = get_weight(A, A.episode[i].after)
         for Vn ∈ ftuple(A.episode[i].after)
             w[Vn[2]][Vn[1]]+= A.α * (A.episode[i+1].reward + W - wi)
         end
-        W  = get_weight(A, stuple(A.episode[i+1].after))
-        wi = get_weight(A, stuple(A.episode[i].after))
+        # W  = get_weight(A, stuple(A.episode[i+1].after))
+        # wi = get_weight(A, stuple(A.episode[i].after))
         for Vn ∈ stuple(A.episode[i].after)
-            w[Vn[2]+4][Vn[1]]+= A.α * (A.episode[i+1].reward + W - wi)
+            w[Vn[2]+2][Vn[1]]+= A.α * (A.episode[i+1].reward + W - wi)
         end
 
     end
@@ -287,7 +287,6 @@ function take_action(A::Player, b::T) where T <: AbstractBoard
         if reward == -1
             continue
         end
-        #ntuple = ftuple(before)
         V = float(reward) + get_weight(A, before)
         # push!(a, V)
         if V > MaxVal
