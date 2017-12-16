@@ -10,11 +10,11 @@ struct State
 end
 
 function ftuple(s::T)::Int where T<:SubArray
-    return s[1]*25^3 + s[2]*25^2 + s[3]*25 + s[4] + 1
+    return s[1]*20^3 + s[2]*20^2 + s[3]*20 + s[4] + 1
 end
 
 function ftuple(s::UInt32)::Int
-    return Int((s >> 24) & 0xff) *25^3 + Int((s >> 16) & 0xff) *25^2 + Int((s >> 8) & 0xff) *25^1 + Int(s  & 0xff)  + 1
+    return Int((s >> 24) & 0xff) *20^3 + Int((s >> 16) & 0xff) *20^2 + Int((s >> 8) & 0xff) *20^1 + Int(s  & 0xff)  + 1
 end
 
 function ftuple(b::Board)::NTuple{8,Tuple{Int64,Int64}}
@@ -35,17 +35,17 @@ function ftuple(b::BitBoard)::NTuple{8,Tuple{Int64,Int64}}
     a2 = (ftuple(GetRow(b′ , 1)), 2)
     a3 = (ftuple(GetRow(b′ , 2)), 2)
     a4 = (ftuple(GetRow(b′ , 3)), 1)
-    a5 = (ftuple(GetRow(b , 0)), 1)
-    a6 = (ftuple(GetRow(b , 1)), 2)
-    a7 = (ftuple(GetRow(b , 2)), 2)
-    a8 = (ftuple(GetRow(b , 3)), 1)
+    a5 = (ftuple(GetRow(b , 0)), 3)
+    a6 = (ftuple(GetRow(b , 1)), 4)
+    a7 = (ftuple(GetRow(b , 2)), 4)
+    a8 = (ftuple(GetRow(b , 3)), 3)
     return (a1,a2,a3,a4,a5,a6,a7,a8)
 end
 
 ftuple(x::UInt128) = ftuple(BitBoard(x))
 
 function stuple(s::T)::Int where T<:SubArray
-    return s[1]*25^5 + s[2]*25^4 + s[3]*25^3 + s[4]*25^2 + s[5]*25 + s[6] + 1
+    return s[1]*20^5 + s[2]*20^4 + s[3]*20^3 + s[4]*20^2 + s[5]*20 + s[6] + 1
 end
 
 function stuple(b::Board)::NTuple{12,Tuple{Int64,Int64}}
@@ -65,12 +65,12 @@ function stuple(b::Board)::NTuple{12,Tuple{Int64,Int64}}
 end
 
 function stuple(x::UInt32, y::UInt32)::Int
-    return ftuple(x) + Int(y & 0xff) * 25^4 + Int((y >> 8) & 0xff) * 25^5
+    return ftuple(x) + Int(y & 0xff) * 20^4 + Int((y >> 8) & 0xff) * 20^5
 end
 
 
 function stuple(b::BitBoard)::NTuple{12,Tuple{Int64,Int64}}
-    b′ = b'
+    b′ = transpose(b)::BitBoard
     a1  = (stuple(GetRow(b′, 0), GetRow(b′, 1)), 1)
     a2  = (stuple(GetRow(b′, 1), GetRow(b′, 2)), 2)
     a3  = (stuple(GetRow(b′, 2), GetRow(b′, 3)), 3)
@@ -156,7 +156,6 @@ function take_action(A::RndEnv, b::T) where T <: AbstractBoard
     for pos ∈ space
         if b(pos) == 0
             tile = rand(A.rng, 0:3) != 0 ? 1 : 3
-            #tile = rand(A.rng, 0:9) != 0 ? 1 : 2
             return place(tile, pos)
         end
     end
@@ -181,12 +180,15 @@ mutable struct Player <: AbstractAgent
         if loaded != nothing
             load_weights(P, loaded)
         else
-            resize!(P.weights, 5)
-            P.weights[1] = Weight(25^4)
-            P.weights[2] = Weight(25^4)
-            P.weights[3] = Weight(25^6)
-            P.weights[4] = Weight(25^6)
-            P.weights[5] = Weight(25^6)
+            resize!(P.weights, 7)
+            MAXTILE = 20
+            P.weights[1] = Weight(MAXTILE^4)
+            P.weights[2] = Weight(MAXTILE^4)
+            P.weights[3] = Weight(MAXTILE^4)
+            P.weights[4] = Weight(MAXTILE^4)
+            P.weights[5] = Weight(MAXTILE^6)
+            P.weights[6] = Weight(MAXTILE^6)
+            P.weights[7] = Weight(MAXTILE^6)
             # P.weights[6] = Weight(25^6)
             # P.weights[7] = Weight(25^6)
             # P.weights[8] = Weight(25^6)
@@ -207,7 +209,7 @@ end
 function get_weight(A::Player, ntuple::NTuple{12,Tuple{Int,Int}})
     Sum = 0.0
     for st ∈ ntuple
-        Sum+= A.weights[st[2]+2][st[1]]
+        Sum+= A.weights[st[2]+4][st[1]]
     end
     return Sum
 end
@@ -228,7 +230,7 @@ function close_episode(A::Player, flag::String)
         w[V[2]][V[1]] += A.α * (0  + 0 - w[V[2]][V[1]] )
     end
     for V ∈ stuple(A.episode[end].after)
-        w[V[2]+2][V[1]] += A.α * (0  + 0 - w[V[2]+2][V[1]] )
+        w[V[2]+4][V[1]] += A.α * (0  + 0 - w[V[2]+4][V[1]] )
     end
     for i ∈ size(A.episode,1)-1:-1:1
         # W  = get_weight(A, ftuple(A.episode[i+1].after))
@@ -241,7 +243,7 @@ function close_episode(A::Player, flag::String)
         # W  = get_weight(A, stuple(A.episode[i+1].after))
         # wi = get_weight(A, stuple(A.episode[i].after))
         for Vn ∈ stuple(A.episode[i].after)
-            w[Vn[2]+2][Vn[1]]+= A.α * (A.episode[i+1].reward + W - wi)
+            w[Vn[2]+4][Vn[1]]+= A.α * (A.episode[i+1].reward + W - wi)
         end
 
     end
@@ -287,34 +289,34 @@ struct After <: StateType end
 #::Type{After}
 function expectmax(A::Player, B::T, d::Int, ::Type{After})::Float64 where T <: AbstractBoard
     if d == 0
-        ntuple = ftuple(B)
-        return get_weight(A, ntuple)
+        return get_weight(A, B)
     end
     α = 0.
     s = empty(B)
 
-    ignore1 = false
+    # ignore1 = false
 
     # if length(s) < 3
     #     d+=1
+    # end
     #else
-    if length(s) > 8
-        ignore1 = true
-    end
+    # if length(s) > 8
+    #     ignore1 = true
+    # end
 
     pc = 1. / float(length(s))
-    if !ignore1
-        for p ∈ s
-            b = T(B)
-            apply(place(1, p), b)
-            α += 0.75 * pc * expectmax(A, b, d-1, Before)
-        end
-    end
+    # if !ignore1
+    #     for p ∈ s
+    #         b = T(B)
+    #         apply(place(1, p), b)
+    #         α += 0.75 * pc * expectmax(A, b, d-1, Before)
+    #     end
+    # end
 
     for p ∈ s
-        # b = T(B)
-        # apply(place(1, p), b)
-        # α += 0.75 * pc * expectmax(A, b, d-1, Before)
+        b = T(B)
+        apply(place(1, p), b)
+        α += 0.75 * pc * expectmax(A, b, d-1, Before)
         b′ = T(B)
         apply(place(3, p), b′)
         α += 0.25 * pc * expectmax(A, b′, d-1, Before)
@@ -356,10 +358,6 @@ end
 
 #::Type{Before}
 function expectmax(A::Player, B::T, d::Int, ::Type{Before})::Float64 where T <: AbstractBoard
-    if d == 0
-        ntuple = ftuple(B)
-        return get_weight(A, ntuple)
-    end
     α = -Inf
     for m ∈ 0:3
         b = T(B)
@@ -372,10 +370,8 @@ function expectmax(A::Player, B::T, d::Int, ::Type{Before})::Float64 where T <: 
         α = max(α, k + expectmax(A, b, d-1, After))
     end
     if isinf(α)
-        #S.tt[Before][Tuple(B.tile)] = 0.
         return 0.
     end
-    #S.tt[Before][Tuple(B.tile)] = α
     return α
 end
 
@@ -393,8 +389,8 @@ function take_action(A::Player, b::T) where T <: AbstractBoard
             continue
         end
         #V = float(reward) + get_weight(A, ntuple) + expectmax(A, before, After)
-        #V = float(reward) + expectmax(A, before, 3, After)
-        V = float(reward) + get_weight(A, before)
+        #V = float(reward) + expectmax(A, before, 1, After)
+        V = float(reward) + get_weight(A, before) + expectmax(A, before, 3, After)
         # push!(a, V)
         if V > MaxVal
             MaxVal = V
