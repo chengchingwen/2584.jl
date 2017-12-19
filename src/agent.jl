@@ -163,6 +163,29 @@ function take_action(A::RndEnv, b::T) where T <: AbstractBoard
 end
 
 
+const jobs = RemoteChannel(()->Channel{Int}(32));
+const QuestBoard = RemoteChannel(()->Channel{Tuple{BitBoard, Int}}(0));
+const AnswerBoard = RemoteChannel(()->Channel{Int}(0));
+const QuestWeight = RemoteChannel(()->Channel{BitBoard}(0));
+const AnswerWeight = RemoteChannel(()->Channel{Float64}(0));
+const results = RemoteChannel(()->Channel{Tuple}(32));
+
+function WhatsNext()
+    while true
+        b, m = take!(QuestBoard)::Tuple{BitBoard, Int}
+        k = apply(Action(m), b)::Int
+        put!(AnswerBoard, k)
+    end
+end
+
+
+@everywhere function papply(a::Action, b::BitBoard, QuestBoard ,AnswerBoard)::Int
+    put!(QuestBoard, (b, a.opcode))
+    return take!(AnswerBoard)::Int
+end
+
+@schedule WhatsNext()
+
 mutable struct Player <: AbstractAgent
     property::Dict{String, Union{Int, String, Float64}}
     α::Float64
@@ -193,10 +216,25 @@ mutable struct Player <: AbstractAgent
             # P.weights[7] = Weight(25^6)
             # P.weights[8] = Weight(25^6)
         end
+        @schedule WhatsWeight(P)
         return P
     end
     Player(::Void) = Player()
 end
+
+function WhatsWeight(A::Player)
+    while true
+        b = take!(QuestWeight)::BitBoard
+        k = get_weight(A, b)::Float64
+        put!(AnswerWeight, k)
+    end
+end
+
+@everywhere function pget_weight(B::BitBoard, QuestWeight ,AnswerWeight)::Float64
+    put!(QuestWeight, B)
+    return take!(AnswerWeight)
+end
+
 
 function get_weight(A::Player, ntuple::NTuple{8,Tuple{Int64,Int64}})
     Sum = 0.0
@@ -281,10 +319,80 @@ end
 
 
 
-abstract type  StateType end
+@everywhere abstract type  StateType end
 
-struct Before <: StateType end
-struct After <: StateType end
+@everywhere struct Before <: StateType end
+@everywhere struct After <: StateType end
+
+
+
+@everywhere function expectmax(B::BitBoard, d::Int, ::Type{After}, QuestBoard ,AnswerBoard ,QuestWeight ,AnswerWeight)::Float64
+    #    println(B)
+    #println(d)
+    if d == 0
+        return pget_weight(B, QuestWeight ,AnswerWeight)
+    end
+    α = 0.
+    s = empty(B)
+    pc::Float64 = 1. / float(length(s))
+    tmp = Future[]
+    for p ∈ s
+        b::BitBoard = BitBoard(B)
+        papply(place(1, p), b, QuestBoard ,AnswerBoard)
+        b::BitBoard
+        expect::Future = @spawn expectmax(b, d-1, Before, QuestBoard ,AnswerBoard ,QuestWeight ,AnswerWeight)
+        M::Future = @spawn 0.75 * pc * fetch(expect)
+        # println(typeof(expect))
+        # println(typeof(M))
+        push!(tmp, M)
+        b′::BitBoard = BitBoard(B)
+        papply(place(3, p), b′, QuestBoard ,AnswerBoard)
+        b′::BitBoard
+        expect = @spawn expectmax(b′, d-1, Before, QuestBoard ,AnswerBoard ,QuestWeight ,AnswerWeight)
+        M = @spawn 0.25 * pc * fetch(expect)
+        # println(typeof(expect))
+        # println(typeof(M))
+        push!(tmp, M)
+    end
+    #println(tmp)
+    if isempty(tmp)
+        return 0.
+    end
+    V::Vector{Float64} = map(fetch, tmp)
+    #println(V)
+    return sum(V)
+end
+
+@everywhere function expectmax(B::BitBoard, d::Int , ::Type{Before}, QuestBoard ,AnswerBoard ,QuestWeight ,AnswerWeight)::Float64
+    #    println(B)
+    if d == 0
+        return 0.
+    end
+    #println(d)
+    α = -Inf
+    tmp = Future[]
+    for m ∈ 0:3
+        b = BitBoard(B)
+        k = papply(Action(m), b, QuestBoard ,AnswerBoard)
+        if k == -1
+            continue
+        end
+        e = @spawn expectmax(b, d-1, After, QuestBoard ,AnswerBoard ,QuestWeight ,AnswerWeight)
+        M = @spawn k + fetch(e)
+        push!(tmp, M)
+    end
+    if isempty(tmp)
+        return 0.
+    end
+    V::Vector{Float64} = map(fetch, tmp)
+    #println(V)
+    α::Float64 = maximum(V)
+    # if isinf(α)
+    #     return 0.
+    # end
+    return α
+end
+
 
 #::Type{After}
 function expectmax(A::Player, B::T, d::Int, ::Type{After})::Float64 where T <: AbstractBoard
@@ -358,6 +466,9 @@ end
 
 #::Type{Before}
 function expectmax(A::Player, B::T, d::Int, ::Type{Before})::Float64 where T <: AbstractBoard
+    if d == 0
+        return 0.
+    end
     α = -Inf
     for m ∈ 0:3
         b = T(B)
@@ -390,7 +501,8 @@ function take_action(A::Player, b::T) where T <: AbstractBoard
         end
         #V = float(reward) + get_weight(A, ntuple) + expectmax(A, before, After)
         #V = float(reward) + expectmax(A, before, 1, After)
-        V = float(reward) + get_weight(A, before) + expectmax(A, before, 3, After)
+        V = float(reward) + get_weight(A, before) + expectmax(before, 3, After, QuestBoard ,AnswerBoard ,QuestWeight ,AnswerWeight)
+        #println(V)
         # push!(a, V)
         if V > MaxVal
             MaxVal = V

@@ -2,18 +2,18 @@ using JLD
 include("./board.jl")
 precompute = load("$(@__DIR__)/precomputemove.jld", "PrecomputeLeft")
 
-mutable struct BitBoard <: AbstractBoard
+@everywhere mutable struct BitBoard <: AbstractBoard
     tile::UInt128
     BitBoard() = new(UInt128(0))
     BitBoard(x::UInt128) = new(x)
     BitBoard(b::BitBoard) = new(b.tile)
 end
 
-function (b::BitBoard)(i::Int)
+@everywhere function (b::BitBoard)(i::Int)
     return Int((b.tile >> ((15 - i) * 8)) & 0xff)
 end
 
-function (b::BitBoard)(i::Int, j::Int)
+@everywhere function (b::BitBoard)(i::Int, j::Int)
     return b( (i * 4) + j )
 end
 
@@ -146,7 +146,7 @@ function move(b::BitBoard, opcode::Int)
 end
 
 
-function empty(b::BitBoard)::Vector{Int}
+@everywhere function empty(b::BitBoard)::Vector{Int}
     a = Vector{Int}()
     for i in 0:15
         if b(i) == 0

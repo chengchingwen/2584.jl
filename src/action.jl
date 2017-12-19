@@ -2,7 +2,7 @@
 include("./board.jl")
 include("./bitboard.jl")
 
-struct Action
+@everywhere struct Action
     opcode::Int
     Action() = new(-1)
     Action(x::Int) = new(x)
@@ -69,7 +69,7 @@ function move(i::Int)
     return Action(i)
 end
 
-function place(tile::Int, pos::Int)
+@everywhere function place(tile::Int, pos::Int)
     return Action((tile << 4) | (pos))
 end
 

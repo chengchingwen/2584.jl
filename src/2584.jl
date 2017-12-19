@@ -38,6 +38,7 @@ function Run(stat::Statistic, game::T ,play::Player, evil::RndEnv) where T <: Ab
         if apply(move, game) == -1
             break
         end
+        println(game)
         save_action(stat, move)
         if check_for_win(who, game)
             break
